@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="fem-as3" default="docs" basedir=".">
+	<property file="./sdk.properties"/>
+	<property file="./build.properties"/>
+	
+	<target name="docs">
+		<exec executable="${asdoc}" failonerror="true">
+            <arg line="-doc-sources '${source.root}'" />
+            <arg line="-doc-sources '${source.root}'" />
+            <arg line="-main-title 'fem-as3 Documentation'" />
+            <arg line="-window-title 'fem-as3 Documentation'" />
+            <arg line="-output '${docs.output}'" />
+        </exec>
+	</target>
+</project>
