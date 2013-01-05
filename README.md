@@ -21,10 +21,10 @@ var co:FemConstruction = new FemConstruction();
 Создание необходимых материалов:
 ```as3
 var defaultMaterial:FemMaterial = new FemMaterial(
-  "Стальной стержень",     // Название стержня
-	2 * Math.pow(10, 11),  // Модуль упругости, Па
-	0.01,                  // Площадь поперечного сечения, м^2
-	8.3 * Math.pow(10, -8) // Момент инерции, м^4
+    "Стальной стержень",   // Название стержня
+    2 * Math.pow(10, 11),  // Модуль упругости, Па
+    0.01,                  // Площадь поперечного сечения, м^2
+    8.3 * Math.pow(10, -8) // Момент инерции, м^4
 );
 ```
 
@@ -35,6 +35,7 @@ var node2:FemNode = co.addNode(new FemNode(2, new Point(0, 4.8), FemNode.TYPE_HI
 var node3:FemNode = co.addNode(new FemNode(3, new Point(4, 0), FemNode.TYPE_HING_MOVED, 90, 0, 0, 15000));
 var node4:FemNode = co.addNode(new FemNode(4, new Point(4, 4.8), FemNode.TYPE_HING_MOVED, 90, 0, -10000));
 ```
+
 Добавление стержней в конструкцию:
 ```as3
 co.addRod(new FemRod(1, defaultMaterial, node1, node2));
