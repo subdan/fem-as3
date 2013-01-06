@@ -12,16 +12,63 @@ package ru.subdan.fem
 	 */
 	public class FemRod
 	{
-		// Идентификатор стержня.
-		private var _id:int;
+		//----------------------------------
+		//  PUBLIC VARIABLES
+		//----------------------------------
 
-		// Материал стержня
-		private var _material:FemMaterial;
+		/**
+		 * Идентификатор стержня.
+		 */
+		public var id:int;
 
-		// Узел начала стержня
-		private var _from:FemNode;
-		// Узел конца стержня
-		private var _to:FemNode;
+		/**
+		 * Материал стержня.
+		 */
+		public var material:FemMaterial;
+
+		/**
+		 * Узел начала стержня.
+		 */
+		public var from:FemNode;
+
+		/**
+		 * Узел конца стержня.
+		 */
+		public var to:FemNode;
+
+		/**
+		 * Значение продольной силы в начале стержня после выполнения расчета.
+		 */
+		public var factorNFrom:Number;
+
+		/**
+		 * Значение продольной силы в конце стержня после выполнения расчета.
+		 */
+		public var factorNTo:Number;
+
+		/**
+		 * Значение поперечной силы в начале стержня после выполнения расчета.
+		 */
+		public var factorQFrom:Number;
+
+		/**
+		 * Значение поперечной силы в конце стержня после выполнения расчета.
+		 */
+		public var factorQTo:Number;
+
+		/**
+		 * Значение момента в начале стержня после выполнения расчета.
+		 */
+		public var factorMFrom:Number;
+
+		/**
+		 * Значение момента в конце стержня после выполнения расчета.
+		 */
+		public var factorMTo:Number;
+
+		//----------------------------------
+		//  PRIVATE VARIABLES
+		//----------------------------------
 
 		// Матрица жесткости стержня в местной системе координат
 		private var _Rl:Array;
@@ -49,14 +96,20 @@ package ru.subdan.fem
 		public function FemRod(id:int, material:FemMaterial, from:FemNode,
 		                       to:FemNode)
 		{
-			_id = id;
-			_material = material;
-			_from = from;
-			_to = to;
+			this.id = id;
+			this.material = material;
+			this.from = from;
+			this.to = to;
 
-			// Расчет матрицы жесткости
-			calculateR();
+			// Расчет матрицы жесткости в местной СК.
+			calcLocalAndGlobalR();
 		}
+
+		//----------------------------------------------------------------------
+		//
+		//  PUBLIC METHODS
+		//
+		//----------------------------------------------------------------------
 
 		/**
 		 * Вычисляет вектор узловых перемещений стержня в местной системе координат.
@@ -87,8 +140,11 @@ package ru.subdan.fem
 		 */
 		public function free():void
 		{
-			_material = null;
-			_from = null;
+			material = null;
+			from = null;
+			to = null;
+			id = -1;
+
 			_Rl = null;
 			_Rg = null;
 			_V = null;
@@ -97,39 +153,44 @@ package ru.subdan.fem
 			_rl = null;
 		}
 
+		public function toString():String
+		{
+			return "FemRod{id=" + String(id) + ",material=" + String(material) +
+				       ",from=" + String(from) + ",to=" + String(to) + "}";
+		}
+
 		//----------------------------------------------------------------------
 		//
-		//  Private methods
+		//  PRIVATE METHODS
 		//
 		//----------------------------------------------------------------------
 
 		/**
 		 * @private
-		 * Вычисляет матрицу жесткости стержня
-		 * в местной и общей системе координат.
+		 * Вычисляет матрицу жесткости стержня в местной и общей СК.
 		 */
-		private function calculateR():void
+		private function calcLocalAndGlobalR():void
 		{
 			// Расчет длины конечного элемента
-			var len:Number = FemMath.distance(_from.pos, _to.pos);
+			var len:Number = FemMath.distance(from.pos, to.pos);
 
 			// Расчет косинуса и синуса угла наклона
-			var sinA:Number = (_to.pos.y - _from.pos.y) / len;
-			var cosA:Number = (_to.pos.x - _from.pos.x) / len;
+			var sinA:Number = (to.pos.y - from.pos.y) / len;
+			var cosA:Number = (to.pos.x - from.pos.x) / len;
 
 			// Создание матрицы 6 на 6
 			_Rl = FemMath.getMatrix(6, 6);
 
 			// Заполнение половины матрицы
-			_Rl[0][0] = _material.E * _material.F / len;
+			_Rl[0][0] = material.e * material.f / len;
 			_Rl[0][3] = -_Rl[0][0];
 
-			_Rl[1][1] = 12 * _material.E * _material.I / Math.pow(len, 3);
-			_Rl[1][2] = 6 * _material.E * _material.I / Math.pow(len, 2);
+			_Rl[1][1] = 12 * material.e * material.i / Math.pow(len, 3);
+			_Rl[1][2] = 6 * material.e * material.i / Math.pow(len, 2);
 			_Rl[1][4] = -_Rl[1][1];
 			_Rl[1][5] = _Rl[1][2];
 
-			_Rl[2][2] = 4 * _material.E * _material.I / len;
+			_Rl[2][2] = 4 * material.e * material.i / len;
 			_Rl[2][4] = -_Rl[1][5];
 			_Rl[2][5] = _Rl[2][2] / 2;
 
@@ -188,22 +249,6 @@ package ru.subdan.fem
 		public function set Rg(value:Array):void
 		{
 			_Rg = value;
-		}
-
-		/**
-		 * Возвращает узел начала стержня.
-		 */
-		public function get from():FemNode
-		{
-			return _from;
-		}
-
-		/**
-		 * Возвращает узел конца стержня.
-		 */
-		public function get to():FemNode
-		{
-			return _to;
 		}
 
 		/**

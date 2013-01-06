@@ -13,39 +13,44 @@ package ru.subdan.fem
 	public class FemMaterial
 	{
 		/**
-		 * Название материала стержня.
+		 * Идентификатор материала.
 		 */
-		public var name:String;
+		public var id:int;
 
 		/**
 		 * Модуль упругости материала стержня, Па.
 		 */
-		public var E:Number;
+		public var e:Number;
 
 		/**
 		 * Площадь поперечного сечения стержня, м^2.
 		 */
-		public var F:Number;
+		public var f:Number;
 
 		/**
 		 * Момент инерции материала стрежня, м^4.
 		 */
-		public var I:Number;
+		public var i:Number;
 
 		/**
 		 * @constructor
-		 * @param _name Название материала стержня.
-		 * @param _E Модуль упругости материала стержня, Па.
-		 * @param _F Площадь поперечного сечения стержня, м^2.
-		 * @param _I Момент инерции материала стрежня, м^4.
+		 * @param id Идентификатор материала.
+		 * @param e Модуль упругости материала стержня, Па.
+		 * @param f Площадь поперечного сечения стержня, м^2.
+		 * @param i Момент инерции материала стрежня, м^4.
 		 */
-		public function FemMaterial(_name:String, _E:Number, _F:Number,
-		                            _I:Number)
+		public function FemMaterial(id:int, e:Number, f:Number, i:Number)
 		{
-			name = _name;
-			E = _E;
-			F = _F;
-			I = _I;
+			this.id = id;
+			this.e = e;
+			this.f = f;
+			this.i = i;
+		}
+
+		public function toString():String
+		{
+			return "FemMaterial{id=" + String(id) + ",e=" + String(e) +
+				       ",f=" + String(f) + ",i=" + String(i) + "}";
 		}
 	}
 }

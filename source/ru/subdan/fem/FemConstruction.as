@@ -7,20 +7,26 @@
 // =============================================================================
 package ru.subdan.fem
 {
+	import flash.utils.Dictionary;
+
 	/**
 	 * Класс описывает плоскую стержневую конструкцию.
 	 */
 	public class FemConstruction
 	{
 		// Массив стержней
-		private var _rodesArr:Vector.<FemRod>;
+		private var _rodsArr:Vector.<FemRod>;
 		// Количество стержней
-		private var _rodesNum:int;
+		private var _rodsNum:int;
+		// Словарь стержней
+		private var _rodsByID:Dictionary;
 
 		// Массив узлов
 		private var _nodesArr:Vector.<FemNode>;
 		// Количество узлов
 		private var _nodesNum:int;
+		// Словарь узлов
+		private var _nodesByID:Dictionary;
 
 		/**
 		 * @constructor
@@ -41,10 +47,13 @@ package ru.subdan.fem
 		 */
 		private function init():void
 		{
-			_rodesNum = 0;
-			_rodesArr = new <FemRod>[];
+			_rodsNum = 0;
+			_rodsArr = new <FemRod>[];
+			_rodsByID = new Dictionary();
+
 			_nodesNum = 0;
 			_nodesArr = new <FemNode>[];
+			_nodesByID = new Dictionary();
 		}
 
 		//----------------------------------------------------------------------
@@ -60,8 +69,9 @@ package ru.subdan.fem
 		 */
 		public function addRod(rod:FemRod):FemRod
 		{
-			_rodesArr[_rodesNum] = rod;
-			_rodesNum++;
+			_rodsArr[_rodsNum] = rod;
+			_rodsByID[rod.id] = rod;
+			_rodsNum++;
 			return rod;
 		}
 
@@ -73,22 +83,43 @@ package ru.subdan.fem
 		public function addNode(node:FemNode):FemNode
 		{
 			_nodesArr[_nodesNum] = node;
+			_nodesByID[node.id] = node;
 			_nodesNum++;
 			return node;
 		}
 
 		/**
-		 * Вычисляет внутренние усилия в каждом стержне.
-		 * @return Массив усилий. В случае ошибки вернет пустой массив.
+		 * Возвращает узел по его идентификатору.
+		 * @param id Идентификатор узла.
+		 * @return Возвращает узел.
 		 */
-		public function calculateAll():Array
+		public function getNode(id:int):FemNode
+		{
+			return _nodesByID[id];
+		}
+
+		/**
+		 * Возвращает стержень по его идентификатору.
+		 * @param id Идентификатор стержня.
+		 * @return Возвращает стержень.
+		 */
+		public function getRod(id:int):FemRod
+		{
+			return _rodsByID[id];
+		}
+
+		/**
+		 * Вычисляет внутренние усилия в каждом стержне.
+		 * @return Успешность выполнения расчета.
+		 */
+		public function calculateAll():Boolean
 		{
 			// 1. Формирование матрицы жесткости всей конструкции
 
 			var R:Array = FemMath.getMatrix(_nodesNum * 3, _nodesNum * 3);
-			for (var l:int = 0; l < _rodesNum; l++)
+			for (var l:int = 0; l < _rodsNum; l++)
 			{
-				var rod:FemRod = _rodesArr[l];
+				var rod:FemRod = _rodsArr[l];
 
 				var n:int = rod.from.id - 1;
 				var k:int = rod.to.id - 1;
@@ -139,11 +170,11 @@ package ru.subdan.fem
 			{
 				P[i] = [];
 				if (FemMath.getPart(i) == 1)
-					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).FX;
+					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).loadX;
 				else if (FemMath.getPart(i) == 2)
-					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).FY;
+					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).loadY;
 				else if (FemMath.getPart(i) == 3)
-					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).FM;
+					P[i][0] = (_nodesArr[Math.floor(i / 3)] as FemNode).loadM;
 			}
 
 			// 4. Подготовка к решению системы методом гаусса
@@ -156,37 +187,58 @@ package ru.subdan.fem
 			// 5. Решение систеы уравнений методом гаусса
 
 			var Z:Array = FemMath.gauss(m);
-			if (!Z.length) return [];
+			if (!Z.length) return false;
 
 			// 6. Вычисление векторов узловых перемещений
 			// конечных элементов в общей системе координат
 
-			var ans:Array = new Array(_rodesNum);
-			for (i = 0; i < _rodesNum; i++)
+			for (i = 0; i < _rodsNum; i++)
 			{
-				rod = _rodesArr[i];
+				rod = _rodsArr[i];
 				n = rod.from.id - 1;
 				k = rod.to.id - 1;
 
 				rod.zg = new Array(6);
 
 				for (j = 0; j < 3; j++)
-					rod.zg[j] = Z[n * 3 + j]; // Заполнение X, Y, M в начале
+				{
+					// Заполнение X, Y, M в начале
+					rod.zg[j] = Z[n * 3 + j];
+				}
 
 				for (j = 0; j < 3; j++)
-					rod.zg[j + 3] = Z[k * 3 + j]; // Заполнение X, Y, M в конце
+				{
+					// Заполнение X, Y, M в конце
+					rod.zg[j + 3] = Z[k * 3 + j];
+				}
 
 				// 7. Вычисление вектора узловых перемещений стержня в местной СК
 
 				rod.calcLocalOffset();
 
+				// Заполнение X, Y, M в начале
+				rod.from.offsetX = rod.zl[0];
+				rod.from.offsetY = rod.zl[1];
+				rod.from.offsetM = rod.zl[2];
+
+				// Заполнение X, Y, M в конце
+				rod.to.offsetX = rod.zl[3];
+				rod.to.offsetY = rod.zl[4];
+				rod.to.offsetM = rod.zl[5];
+
 				// 8. Вычисление вектора внутренних сил стержня в местной СК
 
 				rod.calcLocalForce();
-				ans[i] = rod.rl;
+
+				rod.factorNFrom = rod.rl[0];
+				rod.factorNTo = rod.rl[1];
+				rod.factorQFrom = rod.rl[2];
+				rod.factorQTo = rod.rl[3];
+				rod.factorMFrom = rod.rl[4];
+				rod.factorMTo = rod.rl[5];
 			}
 
-			return ans;
+			return true;
 		}
 
 		/**
@@ -194,8 +246,8 @@ package ru.subdan.fem
 		 */
 		public function resetAll():void
 		{
-			for (var i:int = 0; i < _rodesNum; i++)
-				_rodesArr[i].free();
+			for (var i:int = 0; i < _rodsNum; i++)
+				_rodsArr[i].free();
 			init();
 		}
 	}

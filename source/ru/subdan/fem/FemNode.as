@@ -15,7 +15,7 @@ package ru.subdan.fem
 	public class FemNode
 	{
 		//----------------------------------
-		//  Типы узла
+		//  STATIC CONSTANTS
 		//----------------------------------
 
 		/**
@@ -44,7 +44,7 @@ package ru.subdan.fem
 		public static const TYPE_HING_FIXED:int = 3;
 
 		//----------------------------------
-		//  Private variables
+		//  PUBLIC VARIABLES
 		//----------------------------------
 
 		/**
@@ -74,38 +74,62 @@ package ru.subdan.fem
 		/**
 		 * Составляющая нагрузки вдоль оси X, H.
 		 */
-		public var FX:Number;
+		public var loadX:Number;
 
 		/**
 		 * Составляющая нагрузки вдоль оси Y, H.
 		 */
-		public var FY:Number;
+		public var loadY:Number;
 
 		/**
 		 * Момент, действующий на узел, H * м.
 		 */
-		public var FM:Number;
+		public var loadM:Number;
+
+		/**
+		 * Смещение узла по оси X после выполнения расчета.
+		 */
+		public var offsetX:Number;
+
+		/**
+		 * Смещение узла по оси Y после выполнения расчета.
+		 */
+		public var offsetY:Number;
+
+		/**
+		 * Смещение узла по моменту после выполнения расчета.
+		 */
+		public var offsetM:Number;
 
 		/**
 		 * @constructor
-		 * @param _id Идентификатор узла.
-		 * @param _pos Координаты узла в метрах.
-		 * @param _type Тип узла (см. публичные константы).
-		 * @param _angle Угол поворота узла в градусах.
-		 * @param _FX Составляющая нагрузки вдоль оси X, H.
-		 * @param _FY Составляющая нагрузки вдоль оси Y, H.
-		 * @param _FM Момент, действующий на узел, H * м.
+		 * @param id Идентификатор узла.
+		 * @param pos Координаты узла в метрах.
+		 * @param type Тип узла (см. публичные константы).
+		 * @param angle Угол поворота узла в градусах.
+		 * @param loadX Составляющая нагрузки вдоль оси X, H.
+		 * @param loadY Составляющая нагрузки вдоль оси Y, H.
+		 * @param loadM Момент, действующий на узел, H * м.
 		 */
-		public function FemNode(_id:int, _pos:Point, _type:int, _angle:int = 0,
-		                        _FX:Number = 0, _FY:Number = 0, _FM:Number = 0)
+		public function FemNode(id:int, pos:Point, type:int, angle:int = 0,
+		                        loadX:Number = 0, loadY:Number = 0,
+		                        loadM:Number = 0)
 		{
-			id = _id;
-			pos = _pos;
-			type = _type;
-			angle = _angle;
-			FX = _FX;
-			FY = _FY;
-			FM = _FM;
+			this.id = id;
+			this.pos = pos;
+			this.type = type;
+			this.angle = angle;
+			this.loadX = loadX;
+			this.loadY = loadY;
+			this.loadM = loadM;
+		}
+
+		public function toString():String
+		{
+			return "FemNode{id=" + String(id) + "pos=" + String(pos) +
+				       ",type=" + String(type) + ",angle=" + String(angle) +
+				       ",loadX=" + String(loadX) + ",loadY=" + String(loadY) +
+				       ",loadM=" + String(loadM) + "}";
 		}
 	}
 }
