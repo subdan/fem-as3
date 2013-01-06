@@ -10,7 +10,7 @@ package ru.subdan.fem
 	import flash.geom.Point;
 
 	/**
-	 * Класс для различных математических операций.
+	 * Класс <code>FemMath</code> предназначен для выполнения различных математических операций.
 	 */
 	public class FemMath
 	{
@@ -268,7 +268,7 @@ package ru.subdan.fem
 		 * Представляет число в текстовом виде
 		 * @param number Число.
 		 * @param maxDecimals Максимальное число знаков после запятой.
-		 * @param forceDecimals ПРинудительно добавлять нули.
+		 * @param forceDecimals Принудительно добавлять нули.
 		 */
 		public static function numberFormat(number:*, maxDecimals:int = 2,
 		                              forceDecimals:Boolean = false):String
