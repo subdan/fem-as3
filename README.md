@@ -28,7 +28,7 @@ var defaultMaterial:FemMaterial = new FemMaterial(
 ```
 
 ###Добавление узлов в конструкцию
-> Описание классов, их методов и свойств смотрите в документации.
+> Описание классов, их методов и свойств смотрите в [документации](http://subdan.github.com/fem-as3/).
 
 ```as3
 var node1:FemNode = co.addNode(new FemNode(1, new Point(0, 0), FemNode.TYPE_HING_FIXED, 0));
