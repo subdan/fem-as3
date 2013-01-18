@@ -100,9 +100,6 @@ package ru.subdan.fem
 			this.material = material;
 			this.from = from;
 			this.to = to;
-
-			// Расчет матрицы жесткости в местной СК.
-			calcLocalAndGlobalR();
 		}
 
 		//----------------------------------------------------------------------
@@ -112,64 +109,9 @@ package ru.subdan.fem
 		//----------------------------------------------------------------------
 
 		/**
-		 * Вычисляет вектор узловых перемещений стержня в местной системе координат.
-		 */
-		public function calcLocalOffset():void
-		{
-			_zl = FemMath.multiplyMatrix(_V, _zg);
-		}
-
-		/**
-		 * Вычисляет вектор внутренних сил стержня в местной системе координат.
-		 */
-		public function calcLocalForce():void
-		{
-			_rl = FemMath.multiplyMatrix(_Rl, _zl);
-
-			_rl[0] = _rl[0] * -1;
-			_rl[2] = _rl[2] * -1;
-			_rl[4] = _rl[4] * -1;
-
-			// Округление чисел до 4 знака после запятой.
-			for (var i:int = 0; i < _rl.length; i++)
-				_rl[i] = FemMath.roundDecimal(_rl[i], 4);
-		}
-
-		/**
-		 * Удаляет стержень.
-		 */
-		public function free():void
-		{
-			material = null;
-			from = null;
-			to = null;
-			id = -1;
-
-			_Rl = null;
-			_Rg = null;
-			_V = null;
-			_zl = null;
-			_zg = null;
-			_rl = null;
-		}
-
-		public function toString():String
-		{
-			return "FemRod{id=" + String(id) + ",material=" + String(material) +
-				       ",from=" + String(from) + ",to=" + String(to) + "}";
-		}
-
-		//----------------------------------------------------------------------
-		//
-		//  PRIVATE METHODS
-		//
-		//----------------------------------------------------------------------
-
-		/**
-		 * @private
 		 * Вычисляет матрицу жесткости стержня в местной и общей СК.
 		 */
-		private function calcLocalAndGlobalR():void
+		public function calcLocalAndGlobalR():void
 		{
 			// Расчет длины конечного элемента
 			var len:Number = FemMath.distance(from.pos, to.pos);
@@ -227,6 +169,54 @@ package ru.subdan.fem
 			// Расчет матрицы жесткости стержня в общей системе координат
 			_Rg = FemMath.multiplyMatrix(
 				FemMath.multiplyMatrix(FemMath.transpose(_V), _Rl), _V);
+		}
+
+		/**
+		 * Вычисляет вектор узловых перемещений стержня в местной системе координат.
+		 */
+		public function calcLocalOffset():void
+		{
+			_zl = FemMath.multiplyMatrix(_V, _zg);
+		}
+
+		/**
+		 * Вычисляет вектор внутренних сил стержня в местной системе координат.
+		 */
+		public function calcLocalForce():void
+		{
+			_rl = FemMath.multiplyMatrix(_Rl, _zl);
+
+			_rl[0] = _rl[0] * -1;
+			_rl[2] = _rl[2] * -1;
+			_rl[4] = _rl[4] * -1;
+
+			// Округление чисел до 4 знака после запятой.
+			for (var i:int = 0; i < _rl.length; i++)
+				_rl[i] = FemMath.roundDecimal(_rl[i], 4);
+		}
+
+		/**
+		 * Удаляет стержень.
+		 */
+		public function free():void
+		{
+			material = null;
+			from = null;
+			to = null;
+			id = -1;
+
+			_Rl = null;
+			_Rg = null;
+			_V = null;
+			_zl = null;
+			_zg = null;
+			_rl = null;
+		}
+
+		public function toString():String
+		{
+			return "FemRod{id=" + String(id) + ",material=" + String(material) +
+				       ",from=" + String(from) + ",to=" + String(to) + "}";
 		}
 
 		//----------------------------------------------------------------------

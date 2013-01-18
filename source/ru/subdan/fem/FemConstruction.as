@@ -114,6 +114,13 @@ package ru.subdan.fem
 		 */
 		public function calculateAll():Boolean
 		{
+			// 0. Расчет глобальной матрицы R всех стержней
+
+			for (var i:int = 0; i < _rodsNum; i++)
+			{
+				_rodsArr[i].calcLocalAndGlobalR();
+			}
+
 			// 1. Формирование матрицы жесткости всей конструкции
 
 			var R:Array = FemMath.getMatrix(_nodesNum * 3, _nodesNum * 3);
@@ -124,7 +131,7 @@ package ru.subdan.fem
 				var n:int = rod.from.id - 1;
 				var k:int = rod.to.id - 1;
 
-				for (var i:int = 0; i < 3; i++)
+				for (i = 0; i < 3; i++)
 				{
 					for (var j:int = 0; j < 3; j++)
 					{
