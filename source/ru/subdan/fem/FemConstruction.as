@@ -224,25 +224,25 @@ package ru.subdan.fem
 				rod.calcLocalOffset();
 
 				// Заполнение X, Y, M в начале
-				rod.from.offsetX = rod.zl[0];
-				rod.from.offsetY = rod.zl[1];
-				rod.from.offsetM = rod.zl[2];
+				rod.from.offsetX = Number(FemMath.numberFormat(rod.zl[0], 4, true));
+				rod.from.offsetY = Number(FemMath.numberFormat(rod.zl[1], 4, true));
+				rod.from.offsetM = Number(FemMath.numberFormat(rod.zl[2], 4, true));
 
 				// Заполнение X, Y, M в конце
-				rod.to.offsetX = rod.zl[3];
-				rod.to.offsetY = rod.zl[4];
-				rod.to.offsetM = rod.zl[5];
+				rod.to.offsetX = Number(FemMath.numberFormat(rod.zl[3], 4, true));
+				rod.to.offsetY = Number(FemMath.numberFormat(rod.zl[4], 4, true));
+				rod.to.offsetM = Number(FemMath.numberFormat(rod.zl[5], 4, true));
 
 				// 8. Вычисление вектора внутренних сил стержня в местной СК
 
 				rod.calcLocalForce();
 
-				rod.factorNFrom = rod.rl[0];
-				rod.factorNTo = rod.rl[1];
-				rod.factorQFrom = rod.rl[2];
-				rod.factorQTo = rod.rl[3];
-				rod.factorMFrom = rod.rl[4];
-				rod.factorMTo = rod.rl[5];
+				rod.factorNFrom = Number(FemMath.numberFormat(rod.rl[0], 4, true));
+				rod.factorNTo = Number(FemMath.numberFormat(rod.rl[1], 4, true));
+				rod.factorQFrom = Number(FemMath.numberFormat(rod.rl[2], 4, true));
+				rod.factorQTo = Number(FemMath.numberFormat(rod.rl[3], 4, true));
+				rod.factorMFrom = Number(FemMath.numberFormat(rod.rl[4], 4, true));
+				rod.factorMTo = Number(FemMath.numberFormat(rod.rl[5], 4, true));
 			}
 
 			return true;
@@ -256,6 +256,22 @@ package ru.subdan.fem
 			for (var i:int = 0; i < _rodsNum; i++)
 				_rodsArr[i].free();
 			init();
+		}
+
+		//----------------------------------------------------------------------
+		//
+		//  Get/Set methods
+		//
+		//----------------------------------------------------------------------
+
+		public function get rodsArr():Vector.<FemRod>
+		{
+			return _rodsArr;
+		}
+
+		public function get nodesArr():Vector.<FemNode>
+		{
+			return _nodesArr;
 		}
 	}
 }
