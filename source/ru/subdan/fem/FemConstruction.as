@@ -238,10 +238,10 @@ package ru.subdan.fem
 				rod.calcLocalForce();
 
 				rod.factorNFrom = Number(FemMath.numberFormat(rod.rl[0], 4, true));
-				rod.factorNTo = Number(FemMath.numberFormat(rod.rl[1], 4, true));
-				rod.factorQFrom = Number(FemMath.numberFormat(rod.rl[2], 4, true));
-				rod.factorQTo = Number(FemMath.numberFormat(rod.rl[3], 4, true));
-				rod.factorMFrom = Number(FemMath.numberFormat(rod.rl[4], 4, true));
+				rod.factorNTo = Number(FemMath.numberFormat(rod.rl[3], 4, true));
+				rod.factorQFrom = Number(FemMath.numberFormat(rod.rl[1], 4, true));
+				rod.factorQTo = Number(FemMath.numberFormat(rod.rl[4], 4, true));
+				rod.factorMFrom = Number(FemMath.numberFormat(rod.rl[2], 4, true));
 				rod.factorMTo = Number(FemMath.numberFormat(rod.rl[5], 4, true));
 			}
 
