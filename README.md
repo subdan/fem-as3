@@ -20,7 +20,7 @@ var co:FemConstruction = new FemConstruction();
 ###Создание необходимых материалов
 ```as3
 var defaultMaterial:FemMaterial = new FemMaterial(
-    1, // Идентификатор стержня
+    1, // Идентификатор материала
     2 * Math.pow(10, 11),  // Модуль упругости, Па
     0.01,                  // Площадь поперечного сечения, м^2
     8.3 * Math.pow(10, -8) // Момент инерции, м^4
