@@ -1,10 +1,10 @@
 #fem-as3
-**Версия 0.7**
+**Версия 0.8**
 
 fem-as3 это библиотека классов написанная на языке ActionScript 3 реализующая метод конечных элементов для расчета плоской стержневой конструкции. Библиотека разрабатывалась в рамках курсового проекта и используется в Flash приложении [RodCalc](http://ninasb.ru/rodcalc.html) которое позволяет визуально построить стержневую систему и визуально представить результаты расчета.
 
 ## В будущем будет реализовано
-- Добавление шарниров в узлы
++ Добавление шарниров в узлы (Сделано)
 - Добавление равномерно распределенной нагрузки
 
 ## Как использовать
@@ -41,7 +41,9 @@ var node4:FemNode = co.addNode(new FemNode(4, new Point(4, 4.8), FemNode.TYPE_HI
 ```as3
 co.addRod(new FemRod(1, defaultMaterial, node1, node2));
 co.addRod(new FemRod(2, defaultMaterial, node1, node3));
-co.addRod(new FemRod(3, defaultMaterial, node3, node4));
+var rodWithJoints = co.addRod(new FemRod(3, defaultMaterial, node3, node4));
+rodWithJoints.hasStartJoint = true; // Шарнир в начале стержня
+rodWithJoints.hasEndJoint = true; // Шарнир в конце стержня
 ```
 
 ###Выполнение расчета
@@ -73,8 +75,11 @@ trace(co.getRod(2).factorMTo);
 ```
 
 ## Информация о версиях
+Версия 0.8
+- Возможность добавления шарнира в начало и конец стержня.
+
 Версия 0.7
-- Форматирование результатов расчета
+- Форматирование результатов расчета.
 - Исправлены ошибки.
 
 Версия 0.6

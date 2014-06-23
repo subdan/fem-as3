@@ -2,7 +2,7 @@
 //
 //  Библиотека классов для расчета плоской
 //  стержневой конструкции методом конечных элементов.
-//  Copyright (c) 2012 Субботин Даниил (subdan@me.com)
+//  Copyright (c) 2014 Субботин Даниил (mail@subdan.ru)
 //
 // =============================================================================
 package ru.subdan.fem
@@ -109,20 +109,18 @@ package ru.subdan.fem
 		}
 
 		/**
-		 * Вычисляет внутренние усилия в каждом стержне.
+		 * Вычисляет внутренние усилия и перемещения в каждом стержне.
 		 * @return Успешность выполнения расчета.
 		 */
 		public function calculateAll():Boolean
 		{
 			// 0. Расчет глобальной матрицы R всех стержней
-
 			for (var i:int = 0; i < _rodsNum; i++)
 			{
 				_rodsArr[i].calcLocalAndGlobalR();
 			}
 
 			// 1. Формирование матрицы жесткости всей конструкции
-
 			var R:Array = FemMath.getMatrix(_nodesNum * 3, _nodesNum * 3);
 			for (var l:int = 0; l < _rodsNum; l++)
 			{
@@ -144,11 +142,9 @@ package ru.subdan.fem
 			}
 
 			// 2. Учет граничных условий
-
 			for (l = 0; l < _nodesNum; l++)
 			{
 				var node:FemNode = _nodesArr[l];
-
 				if (node.type == FemNode.TYPE_HARD)
 				{
 					FemMath.freeColRow(R, (node.id - 1) * 3);
@@ -170,7 +166,6 @@ package ru.subdan.fem
 			}
 
 			// 3. Формирование вектора нагрузок (узловых сил)
-
 			var size:int = _nodesNum * 3;
 			var P:Array = new Array(size);
 			for (i = 0; i < size; i++)
@@ -185,20 +180,17 @@ package ru.subdan.fem
 			}
 
 			// 4. Подготовка к решению системы методом гаусса
-
 			var m:Array = FemMath.getMatrix(size, size + 1);
 			for (i = 0; i < size; i++)
 				for (j = 0; j < size + 1; j++)
 					m[i][j] = j == size ? -P[i][0] : R[i][j];
 
 			// 5. Решение систеы уравнений методом гаусса
-
 			var Z:Array = FemMath.gauss(m);
 			if (!Z.length) return false;
 
 			// 6. Вычисление векторов узловых перемещений
 			// конечных элементов в общей системе координат
-
 			for (i = 0; i < _rodsNum; i++)
 			{
 				rod = _rodsArr[i];
@@ -206,13 +198,11 @@ package ru.subdan.fem
 				k = rod.to.id - 1;
 
 				rod.zg = new Array(6);
-
 				for (j = 0; j < 3; j++)
 				{
 					// Заполнение X, Y, M в начале
 					rod.zg[j] = Z[n * 3 + j];
 				}
-
 				for (j = 0; j < 3; j++)
 				{
 					// Заполнение X, Y, M в конце
@@ -220,7 +210,6 @@ package ru.subdan.fem
 				}
 
 				// 7. Вычисление вектора узловых перемещений стержня в местной СК
-
 				rod.calcLocalOffset();
 
 				// Заполнение X, Y, M в начале
@@ -234,9 +223,7 @@ package ru.subdan.fem
 				rod.to.offsetM = Number(FemMath.numberFormat(rod.zl[5], 4, true));
 
 				// 8. Вычисление вектора внутренних сил стержня в местной СК
-
 				rod.calcLocalForce();
-
 				rod.factorNFrom = Number(FemMath.numberFormat(rod.rl[0], 4, true));
 				rod.factorNTo = Number(FemMath.numberFormat(rod.rl[3], 4, true));
 				rod.factorQFrom = Number(FemMath.numberFormat(rod.rl[1], 4, true));
