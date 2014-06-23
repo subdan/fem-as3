@@ -37,6 +37,16 @@ package ru.subdan.fem
 		public var to:FemNode;
 
 		/**
+		 * Есть ли в начале стержня шарнир.
+		 */
+		public var hasStartJoint:Boolean;
+		
+		/**
+		 * Есть ли в конце стержня шарнир.
+		 */
+		public var hasEndJoint:Boolean;
+
+		/**
 		 * Значение продольной силы в начале стержня после выполнения расчета.
 		 */
 		public var factorNFrom:Number;
@@ -124,24 +134,52 @@ package ru.subdan.fem
 			_Rl = FemMath.getMatrix(6, 6);
 
 			// Заполнение половины матрицы
-			_Rl[0][0] = material.e * material.f / len;
-			_Rl[0][3] = -_Rl[0][0];
-
-			_Rl[1][1] = 12 * material.e * material.i / Math.pow(len, 3);
-			_Rl[1][2] = 6 * material.e * material.i / Math.pow(len, 2);
-			_Rl[1][4] = -_Rl[1][1];
-			_Rl[1][5] = _Rl[1][2];
-
-			_Rl[2][2] = 4 * material.e * material.i / len;
-			_Rl[2][4] = -_Rl[1][5];
-			_Rl[2][5] = _Rl[2][2] / 2;
-
-			_Rl[3][3] = _Rl[0][0];
-
-			_Rl[4][4] = _Rl[1][1];
-			_Rl[4][5] = _Rl[2][4];
-
-			_Rl[5][5] = _Rl[2][2];
+			if (!hasStartJoint && !hasEndJoint)
+			{
+				_Rl[0][0] = material.e * material.f / len;
+				_Rl[0][3] = -_Rl[0][0];
+				_Rl[1][1] = 12 * material.e * material.i / Math.pow(len, 3);
+				_Rl[1][2] = 6 * material.e * material.i / Math.pow(len, 2);
+				_Rl[1][4] = -_Rl[1][1];
+				_Rl[1][5] = _Rl[1][2];
+				_Rl[2][2] = 4 * material.e * material.i / len;
+				_Rl[2][4] = -_Rl[1][5];
+				_Rl[2][5] = _Rl[2][2] / 2;
+				_Rl[3][3] = _Rl[0][0];
+				_Rl[4][4] = _Rl[1][1];
+				_Rl[4][5] = _Rl[2][4];
+				_Rl[5][5] = _Rl[2][2];
+			}
+			else if (hasStartJoint)
+			{
+				_Rl[0][0] = _Rl[3][3] = material.e * material.f / len;
+				_Rl[0][3] = _Rl[3][0] = -material.e * material.f / len;
+				_Rl[1][1] = _Rl[4][4] = 3.0 * material.e * material.i / (len * len * len);
+				_Rl[1][4] = _Rl[4][1] = -3.0 * material.e * material.i / (len * len * len);
+				_Rl[2][2] = 0.001;
+				_Rl[1][5] = _Rl[5][1] = 3.0 * material.e * material.i / (len * len);
+				_Rl[4][5] = _Rl[5][4] = -3.0 * material.e * material.i / (len * len);
+				_Rl[5][5] = 3.0 * material.e * material.i / len;
+			}
+			else if (hasEndJoint)
+			{
+				_Rl[0][0] = _Rl[3][3] = material.e * material.f / len;
+				_Rl[0][3] = _Rl[3][0] = -material.e * material.f / len;
+				_Rl[1][1] = _Rl[4][4] = 3.0 * material.e * material.i / (len * len * len);
+				_Rl[1][4] = _Rl[4][1] = -3.0 * material.e * material.i / (len * len * len);
+				_Rl[2][2] = 3.0 * material.e * material.i / len;
+				_Rl[1][2] = _Rl[2][1] = 3.0 * material.e * material.i / (len * len);
+				_Rl[4][2] = _Rl[2][4] = -3.0 * material.e * material.i / (len * len);
+				_Rl[5][5] = 0.001;
+			}
+			else if (hasStartJoint && hasEndJoint)
+			{
+				_Rl[0][0] = _Rl[3][3] = material.e * material.f / len;
+				_Rl[0][3] = _Rl[3][0] = -material.e * material.f / len;
+				_Rl[1][1] = _Rl[4][4] = 0.001;
+				_Rl[2][2] = 0.001;
+				_Rl[5][5] = 0.001;
+			}
 
 			// Отражение по диагонали
 			FemMath.mirror(_Rl);
