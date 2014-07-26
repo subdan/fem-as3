@@ -8,7 +8,7 @@
 package ru.subdan.fem
 {
 	/**
-	 * Класс описывает материал стержня.
+	 * Класс FemMaterial описывает материал стержня.
 	 */
 	public class FemMaterial
 	{
@@ -32,6 +32,12 @@ package ru.subdan.fem
 		 */
 		public var i:Number;
 
+		//----------------------------------------------------------------------
+		//
+		//  CONSTRUCTOR
+		//
+		//----------------------------------------------------------------------
+		
 		/**
 		 * @constructor
 		 * @param id Идентификатор материала.
@@ -47,6 +53,12 @@ package ru.subdan.fem
 			this.i = i;
 		}
 
+		//----------------------------------------------------------------------
+		//
+		//  PUBLIC METHODS
+		//
+		//----------------------------------------------------------------------
+		
 		public function toString():String
 		{
 			return "FemMaterial{id=" + String(id) + ",e=" + String(e) +

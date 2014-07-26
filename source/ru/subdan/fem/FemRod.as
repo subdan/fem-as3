@@ -8,7 +8,7 @@
 package ru.subdan.fem
 {
 	/**
-	 * Класс описывает конечный элемент (стержень).
+	 * Класс FemRod описывает конечный элемент (стержень).
 	 */
 	public class FemRod
 	{
@@ -27,12 +27,12 @@ package ru.subdan.fem
 		public var material:FemMaterial;
 
 		/**
-		 * Узел начала стержня.
+		 * Начальный узел стержня.
 		 */
 		public var from:FemNode;
 
 		/**
-		 * Узел конца стержня.
+		 * Конечный узел стержня.
 		 */
 		public var to:FemNode;
 
@@ -40,12 +40,38 @@ package ru.subdan.fem
 		 * Есть ли в начале стержня шарнир.
 		 */
 		public var hasStartJoint:Boolean;
-		
+
 		/**
 		 * Есть ли в конце стержня шарнир.
 		 */
 		public var hasEndJoint:Boolean;
 
+		/**
+		 * Является ли этот стержень частью большого.
+		 */
+		public var distributed:Boolean;
+
+		/**
+		 * Если стержень является частью большого, то какого.
+		 */
+		public var distributedRod:FemRod;
+		
+		// Массив дополнительных КЭ
+		public var distributedRods:Array;
+		
+		//----------------------------------
+		//  Нагрузка
+		//----------------------------------
+		
+		/**
+		 * Равномерно распределенная нагрузка на стержень.
+		 */
+		public var distributedLoad:Number;
+
+		//----------------------------------
+		//  Результаты расчета
+		//----------------------------------
+		
 		/**
 		 * Значение продольной силы в начале стержня после выполнения расчета.
 		 */
@@ -75,6 +101,12 @@ package ru.subdan.fem
 		 * Значение момента в конце стержня после выполнения расчета.
 		 */
 		public var factorMTo:Number;
+		
+		// Если стержень имеен равномерно распределенную нагрузку то смотри ниже.
+
+		public var factorsM:Array = [];
+		public var factorsN:Array = [];
+		public var factorsQ:Array = [];
 
 		//----------------------------------
 		//  PRIVATE VARIABLES
@@ -103,8 +135,7 @@ package ru.subdan.fem
 		 * @param from Узел начала стержня.
 		 * @param to Узел конца стержня.
 		 */
-		public function FemRod(id:int, material:FemMaterial, from:FemNode,
-		                       to:FemNode)
+		public function FemRod(id:int, material:FemMaterial, from:FemNode, to:FemNode)
 		{
 			this.id = id;
 			this.material = material;
@@ -188,21 +219,59 @@ package ru.subdan.fem
 			_V = FemMath.getMatrix(6, 6);
 
 			// Заполнение матрицы трансформации
-			_V[0][0] = cosA;
-			_V[0][1] = sinA;
-
-			_V[1][0] = -sinA;
-			_V[1][1] = cosA;
-
-			_V[2][2] = 1;
-
-			_V[3][3] = cosA;
-			_V[3][4] = sinA;
-
-			_V[4][3] = -sinA;
-			_V[4][4] = cosA;
-
-			_V[5][5] = 1;
+			// http://window.edu.ru/resource/480/79480/files/МКЭ%20(теория%20и%20практика).pdf
+			if (hasStartJoint && hasEndJoint)
+			{
+				_V[0][0] = cosA;
+				_V[0][1] = sinA;
+				_V[1][0] = -sinA;
+				_V[1][1] = cosA;
+				_V[2][2] = 0.001;
+				_V[3][3] = cosA;
+				_V[3][4] = sinA;
+				_V[4][3] = -sinA;
+				_V[4][4] = cosA;
+				_V[5][5] = 0.001;
+			}
+			else if (hasStartJoint)
+			{
+				_V[0][0] = cosA;
+				_V[0][1] = sinA;
+				_V[1][0] = -sinA;
+				_V[1][1] = cosA;
+				_V[2][2] = 0.001;
+				_V[3][3] = cosA;
+				_V[3][4] = sinA;
+				_V[4][3] = -sinA;
+				_V[4][4] = cosA;
+				_V[5][5] = 1;
+			}
+			else if (hasEndJoint)
+			{
+				_V[0][0] = cosA;
+				_V[0][1] = sinA;
+				_V[1][0] = -sinA;
+				_V[1][1] = cosA;
+				_V[2][2] = 1;
+				_V[3][3] = cosA;
+				_V[3][4] = sinA;
+				_V[4][3] = -sinA;
+				_V[4][4] = cosA;
+				_V[5][5] = 0.001;
+			}
+			else if (!hasStartJoint && !hasEndJoint)
+			{
+				_V[0][0] = cosA;
+				_V[0][1] = sinA;
+				_V[1][0] = -sinA;
+				_V[1][1] = cosA;
+				_V[2][2] = 1;
+				_V[3][3] = cosA;
+				_V[3][4] = sinA;
+				_V[4][3] = -sinA;
+				_V[4][4] = cosA;
+				_V[5][5] = 1;
+			}
 
 			// Расчет матрицы жесткости стержня в общей системе координат
 			_Rg = FemMath.multiplyMatrix(
@@ -254,12 +323,12 @@ package ru.subdan.fem
 		public function toString():String
 		{
 			return "FemRod{id=" + String(id) + ",material=" + String(material) +
-				       ",from=" + String(from) + ",to=" + String(to) + "}";
+				",from=" + String(from) + ",to=" + String(to) + "}";
 		}
 
 		//----------------------------------------------------------------------
 		//
-		//  Get/Set methods
+		//  GET/SET METHODS
 		//
 		//----------------------------------------------------------------------
 
