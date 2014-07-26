@@ -10,7 +10,7 @@ package ru.subdan.fem
 	import flash.geom.Point;
 
 	/**
-	 * Класс <code>FemNode</code> описывает узел.
+	 * Класс FemNode описывает узел.
 	 */
 	public class FemNode
 	{
@@ -48,14 +48,14 @@ package ru.subdan.fem
 		//----------------------------------
 
 		/**
-		 * Координаты узла в метрах.
-		 */
-		public var pos:Point;
-
-		/**
 		 * Идентификатор узла.
 		 */
 		public var id:int;
+
+		/**
+		 * Координаты узла в метрах.
+		 */
+		public var pos:Point;
 
 		/**
 		 * Тип узла (см. публичные константы).
@@ -72,19 +72,37 @@ package ru.subdan.fem
 		public var angle:int;
 
 		/**
+		 * Является ли узел вспомогательным (для вычисления распределенной нагрузки).
+		 */
+		public var distributed:Boolean;
+
+		/**
+		 * Стержень, к которому принадлежит узел.
+		 */
+		public var distributedRod:FemRod;
+
+		//----------------------------------
+		//  Нагрузки
+		//----------------------------------
+		
+		/**
 		 * Составляющая нагрузки вдоль оси X, H.
 		 */
-		public var loadX:Number;
+		public var loadX:Number = 0;
 
 		/**
 		 * Составляющая нагрузки вдоль оси Y, H.
 		 */
-		public var loadY:Number;
+		public var loadY:Number = 0;
 
 		/**
 		 * Момент, действующий на узел, H * м.
 		 */
-		public var loadM:Number;
+		public var loadM:Number = 0;
+
+		//----------------------------------
+		//  Результаты расчета
+		//----------------------------------
 
 		/**
 		 * Смещение узла по оси X после выполнения расчета.
@@ -97,9 +115,15 @@ package ru.subdan.fem
 		public var offsetY:Number;
 
 		/**
-		 * Смещение узла по моменту после выполнения расчета.
+		 * Поворот узла после выполнения расчета.
 		 */
 		public var offsetM:Number;
+
+		//----------------------------------------------------------------------
+		//
+		//  CONSTRUCTOR
+		//
+		//----------------------------------------------------------------------
 
 		/**
 		 * @constructor
@@ -112,8 +136,7 @@ package ru.subdan.fem
 		 * @param loadM Момент, действующий на узел, H * м.
 		 */
 		public function FemNode(id:int, pos:Point, type:int, angle:int = 0,
-		                        loadX:Number = 0, loadY:Number = 0,
-		                        loadM:Number = 0)
+		                        loadX:Number = 0, loadY:Number = 0, loadM:Number = 0)
 		{
 			this.id = id;
 			this.pos = pos;
@@ -124,12 +147,18 @@ package ru.subdan.fem
 			this.loadM = loadM;
 		}
 
+		//----------------------------------------------------------------------
+		//
+		//  PUBLIC METHODS
+		//
+		//----------------------------------------------------------------------
+		
 		public function toString():String
 		{
 			return "FemNode{id=" + String(id) + "pos=" + String(pos) +
-				       ",type=" + String(type) + ",angle=" + String(angle) +
-				       ",loadX=" + String(loadX) + ",loadY=" + String(loadY) +
-				       ",loadM=" + String(loadM) + "}";
+				",type=" + String(type) + ",angle=" + String(angle) +
+				",loadX=" + String(loadX) + ",loadY=" + String(loadY) +
+				",loadM=" + String(loadM) + "}";
 		}
 	}
 }

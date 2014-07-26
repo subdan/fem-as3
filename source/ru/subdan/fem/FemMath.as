@@ -10,21 +10,14 @@ package ru.subdan.fem
 	import flash.geom.Point;
 
 	/**
-	 * Класс <code>FemMath</code> предназначен для выполнения различных математических операций.
+	 * Класс FemMath предназначен для выполнения различных математических операций.
 	 */
 	public class FemMath
 	{
 		/**
-		 * @constructor
-		 */
-		public function FemMath()
-		{
-		}
-
-		/**
 		 * Умножает одну матрицу на другую.
 		 * @param matr1 Матрицу, которую надо умножить.
-		 * @param matr2 Матрица, на который надо умножить.
+		 * @param matr2 Матрица, на которую надо умножить.
 		 * @return Возвращает произведение двух матриц.
 		 */
 		public static function multiplyMatrix(matr1:Array, matr2:Array):Array
@@ -87,7 +80,7 @@ package ru.subdan.fem
 		 * Рассчитывает расстояние между двумя точками.
 		 * @param p1 Координаты первой точки.
 		 * @param p2 Координаты второй точки.
-		 * @return Возрвщает расстояние между точками.
+		 * @return Возвращает расстояние между точками.
 		 */
 		public static function distance(p1:Point, p2:Point):Number
 		{
@@ -138,9 +131,15 @@ package ru.subdan.fem
 		 */
 		public static function traceMatrix(matrix:Array):void
 		{
+			var str:String = "";
 			for (var i:int = 0; i < matrix.length; i++)
 			{
-				trace(matrix[i]);
+				for (var j:int = 0; j < matrix[i].length; j++)
+				{
+					str += (matrix[i][j] + "\t\t");
+				}
+				trace(str);
+				str = "";
 			}
 		}
 
@@ -151,6 +150,7 @@ package ru.subdan.fem
 		 */
 		public static function gauss(matr:Array):Array
 		{
+			return simpleIter(matr);
 			var m:int = matr.length;
 			if (!m) return [];
 			var n:int = matr[0].length;
@@ -163,6 +163,7 @@ package ru.subdan.fem
 			for (var k:int = 0; k < m - 1; k++)
 			{
 				mainElem(matr, k);
+
 				var r:Number = matr[k][k];
 
 				if (r == 0) return [];
@@ -222,6 +223,76 @@ package ru.subdan.fem
 			}
 		}
 
+		public static function simpleIter(matrix:Array):Array
+		{
+			var size:int = matrix.length;
+			var eps:Number = 0.0001;
+
+			var previousVariableValues:Array = [];
+			for (var i:int = 0; i < size; i++)
+			{
+				previousVariableValues[i] = 0.0;
+			}
+
+			// Будем выполнять итерационный процесс до тех пор,
+			// пока не будет достигнута необходимая точность
+			while (true)
+			{
+				// Введем вектор значений неизвестных на текущем шаге
+				var currentVariableValues:Array = [];
+
+				// Посчитаем значения неизвестных на текущей итерации
+				// в соответствии с теоретическими формулами
+				for (i = 0; i < size; i++)
+				{
+					// Инициализируем i-ую неизвестную значением
+					// свободного члена i-ой строки матрицы
+					currentVariableValues[i] = matrix[i][size];
+
+					// Вычитаем сумму по всем отличным от i-ой неизвестным
+					for (var j:int = 0; j < size; j++)
+					{
+						// При j < i можем использовать уже посчитанные
+						// на этой итерации значения неизвестных
+						if (j < i)
+						{
+							currentVariableValues[i] -= matrix[i][j] * currentVariableValues[j];
+						}
+
+						// При j > i используем значения с прошлой итерации
+						if (j > i)
+						{
+							currentVariableValues[i] -= matrix[i][j] * previousVariableValues[j];
+						}
+					}
+
+					// Делим на коэффициент при i-ой неизвестной
+					currentVariableValues[i] /= matrix[i][i];
+				}
+
+				// Посчитаем текущую погрешность относительно предыдущей итерации
+				var error:Number = 0.0;
+
+				for (i = 0; i < size; i++)
+				{
+					error += Math.abs(currentVariableValues[i] - previousVariableValues[i]);
+				}
+
+				// Если необходимая точность достигнута, то завершаем процесс
+				if (error < eps)
+				{
+					break;
+				}
+
+				// Переходим к следующей итерации, так
+				// что текущие значения неизвестных
+				// становятся значениями на предыдущей итерации
+				previousVariableValues = currentVariableValues;
+			}
+
+			return previousVariableValues;
+		}
+
 		/**
 		 * @param num Целое число от 0.
 		 * @return Возвращает позицию числа из группы трех чисел.
@@ -241,14 +312,14 @@ package ru.subdan.fem
 			for (var j:int = 0; j < a.length; j++)
 			{
 				if (n == j)
-					a[n][j] = 1;
+					a[n][j] = 0.001;
 				else
 					a[n][j] = 0;
 			}
 
 			for (j = 0; j < a.length; j++)
 			{
-				if (n == j) a[j][n] = 1;
+				if (n == j) a[j][n] = 0.001;
 				else a[j][n] = 0;
 			}
 		}
@@ -271,8 +342,7 @@ package ru.subdan.fem
 		 * @param maxDecimals Максимальное число знаков после запятой.
 		 * @param forceDecimals Принудительно добавлять нули.
 		 */
-		public static function numberFormat(number:*, maxDecimals:int = 2,
-		                              forceDecimals:Boolean = false):String
+		public static function numberFormat(number:*, maxDecimals:int = 2, forceDecimals:Boolean = false):String
 		{
 			var i:int = 0;
 			var inc:Number = Math.pow(10, maxDecimals);
@@ -283,7 +353,6 @@ package ru.subdan.fem
 			{
 				for (var j:int = 0; j <= maxDecimals - (str.length - (hasSep ? sep - 1 : sep)); j++) ret += "0";
 			}
-			//			while (i + 3 < (str.substr(0, 1) == "-" ? sep - 1 : sep)) ret = (siStyle ? "." : ",") + str.substr(sep - (i += 3), 3) + ret;
 			return str.substr(0, sep - i) + ret;
 		}
 	}
