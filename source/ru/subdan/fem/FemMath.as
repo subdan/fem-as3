@@ -150,7 +150,6 @@ package ru.subdan.fem
 		 */
 		public static function gauss(matr:Array):Array
 		{
-			return simpleIter(matr);
 			var m:int = matr.length;
 			if (!m) return [];
 			var n:int = matr[0].length;

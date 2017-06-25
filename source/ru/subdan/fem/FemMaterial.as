@@ -16,22 +16,22 @@ package ru.subdan.fem
 		 * Идентификатор материала.
 		 */
 		public var id:int;
-
+		
 		/**
 		 * Модуль упругости материала стержня, Па.
 		 */
 		public var e:Number;
-
+		
 		/**
 		 * Площадь поперечного сечения стержня, м^2.
 		 */
 		public var f:Number;
-
+		
 		/**
 		 * Момент инерции материала стрежня, м^4.
 		 */
 		public var i:Number;
-
+		
 		//----------------------------------------------------------------------
 		//
 		//  CONSTRUCTOR
@@ -52,7 +52,7 @@ package ru.subdan.fem
 			this.f = f;
 			this.i = i;
 		}
-
+		
 		//----------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
@@ -62,7 +62,7 @@ package ru.subdan.fem
 		public function toString():String
 		{
 			return "FemMaterial{id=" + String(id) + ",e=" + String(e) +
-				       ",f=" + String(f) + ",i=" + String(i) + "}";
+					",f=" + String(f) + ",i=" + String(i) + "}";
 		}
 	}
 }

@@ -9,9 +9,7 @@ package ru.subdan.fem
 {
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
-
-	import ru.inspirit.linalg.LU;
-
+	
 	/**
 	 * Класс FemConstruction описывает плоскую стержневую конструкцию.
 	 */
@@ -19,24 +17,24 @@ package ru.subdan.fem
 	{
 		// Степень интегрирования равномерно распределенной нагрузки.
 		public static const DISTR_STEP:int = 100;
-
+		
 		// Массив стержней
 		private var _rodsArr:Vector.<FemRod>;
 		// Количество стержней
 		private var _rodsNum:int;
 		// Словарь стержней
 		private var _rodsByID:Dictionary;
-
+		
 		// Массив узлов
 		private var _nodesArr:Vector.<FemNode>;
 		// Количество узлов
 		private var _nodesNum:int;
 		// Словарь узлов
 		private var _nodesByID:Dictionary;
-
+		
 		// Массив удаленных распределенных стержней
 		private var _distrRods:Array;
-
+		
 		/**
 		 * @constructor
 		 */
@@ -44,13 +42,13 @@ package ru.subdan.fem
 		{
 			init();
 		}
-
+		
 		//----------------------------------------------------------------------
 		//
 		//  PRIVATE METHODS
 		//
 		//----------------------------------------------------------------------
-
+		
 		/**
 		 * Инициализация конструкции.
 		 */
@@ -59,20 +57,20 @@ package ru.subdan.fem
 			_rodsNum = 0;
 			_rodsArr = new <FemRod>[];
 			_rodsByID = new Dictionary();
-
+			
 			_nodesNum = 0;
 			_nodesArr = new <FemNode>[];
 			_nodesByID = new Dictionary();
-
+			
 			_distrRods = [];
 		}
-
+		
 		//----------------------------------------------------------------------
 		//
 		//  PUBLIC METHODS
 		//
 		//----------------------------------------------------------------------
-
+		
 		/**
 		 * Добавляет стержень в конструкцию.
 		 * @param rod Стержень, который необходимо добавить в конструкцию.
@@ -85,7 +83,7 @@ package ru.subdan.fem
 			_rodsNum++;
 			return rod;
 		}
-
+		
 		/**
 		 * Добавляет узел в конструкцию.
 		 * @param node Узел, который добавить в систему.
@@ -98,7 +96,7 @@ package ru.subdan.fem
 			_nodesNum++;
 			return node;
 		}
-
+		
 		/**
 		 * Возвращает узел по его идентификатору.
 		 * @param id Идентификатор узла.
@@ -108,7 +106,7 @@ package ru.subdan.fem
 		{
 			return _nodesByID[id];
 		}
-
+		
 		/**
 		 * Возвращает стержень по его идентификатору.
 		 * @param id Идентификатор стержня.
@@ -118,7 +116,7 @@ package ru.subdan.fem
 		{
 			return _rodsByID[id];
 		}
-
+		
 		/**
 		 * Вычисляет внутренние усилия и перемещения в каждом стержне.
 		 * @return Успешность выполнения расчета.
@@ -128,7 +126,7 @@ package ru.subdan.fem
 			// Прежде, чем производить расчет, заменим все стержни, имеющие
 			// равномерно распределенную нагрузку на множество стержней и узлов
 			// к узлам приложим эквивалентную узловую нагрузку.
-
+			
 			var hasDistrLoad:Boolean = false;
 			var rodToSplit:Vector.<FemRod> = new <FemRod>[];
 			for each(var rod1:FemRod in _rodsArr)
@@ -146,24 +144,25 @@ package ru.subdan.fem
 				_distrRods.push(rod2);
 				rod2 = null;
 			}
-
+			
 			//----------------------------------
-
+			
 			// 0. Расчет глобальной матрицы R всех стержней
 			for (var i:int = 0; i < _rodsNum; i++)
 			{
 				_rodsArr[i].calcLocalAndGlobalR();
 			}
-
+			
 			// 1. Формирование матрицы жесткости всей конструкции
 			var R:Array = FemMath.getMatrix(_nodesNum * 3, _nodesNum * 3);
+			
 			for (var l:int = 0; l < _rodsNum; l++)
 			{
 				var rod:FemRod = _rodsArr[l];
-
+				
 				var n:int = rod.from.id - 1;
 				var k:int = rod.to.id - 1;
-
+				
 				for (i = 0; i < 3; i++)
 				{
 					for (var j:int = 0; j < 3; j++)
@@ -175,12 +174,12 @@ package ru.subdan.fem
 					}
 				}
 			}
-
+			
 			// 2. Учет граничных условий
 			for (l = 0; l < _nodesNum; l++)
 			{
 				var fnode:FemNode = _nodesArr[l];
-
+				
 				if (fnode.type == FemNode.TYPE_HARD)
 				{
 					FemMath.freeColRow(R, (fnode.id - 1) * 3);
@@ -200,16 +199,16 @@ package ru.subdan.fem
 						FemMath.freeColRow(R, (fnode.id - 1) * 3);
 				}
 			}
-
+			
 			// 3. Формирование вектора нагрузок (узловых сил)
 			var size:int = _nodesNum * 3;
 			var P:Array = new Array(size);
 			for (i = 0; i < size; i++)
 			{
 				P[i] = [];
-
+				
 				var fsnode:FemNode = (_nodesArr[Math.floor(i / 3)] as FemNode);
-
+				
 				if (FemMath.getPart(i) == 1)
 				{
 					if (fsnode.type == FemNode.TYPE_NONE || (fsnode.type == FemNode.TYPE_HING_MOVED && (fsnode.angle == 0 || fsnode.angle == 180)))
@@ -240,44 +239,18 @@ package ru.subdan.fem
 						P[i][0] = 0;
 				}
 			}
-
+			
 			// 4. Подготовка к решению системы методом гаусса
 			var m:Array = FemMath.getMatrix(size, size + 1);
 			for (i = 0; i < size; i++)
 				for (j = 0; j < size + 1; j++)
 					m[i][j] = j == size ? -P[i][0] : R[i][j];
 
-			var A:Vector.<Number> = new <Number>[];
-			var B:Vector.<Number> = new <Number>[];
-			for (i = 0; i < P.length; i++)
-			{
-				B[i] = P[i][0];
-			}
-
-			var counter:int = 0;
-			for (i = 0; i < size; i++)
-			{
-				for (j = 0; j < size; j++)
-				{
-					A[counter] = R[i][j];
-					counter++;
-				}
-			}
-
-			var x:Vector.<Number> = new <Number>[];
-
-			var lu:LU = new LU();
-			lu.relocateTempBuffer(size);
-			lu.solve(A, size, x, B);
-
 			// 5. Решение систеы уравнений методом гаусса
-			//			var Z:Array = FemMath.gauss(m);
-			var Z:Array = [];
-			for (i = 0; i < size; i++)
-			{
-				Z[i] = x[i];
-			}
-
+			var Z:Array = FemMath.gauss(m);
+			
+			trace(Z);
+			
 			if (!Z.length) return false;
 
 			// 6. Вычисление векторов узловых перемещений
@@ -287,7 +260,7 @@ package ru.subdan.fem
 				rod = _rodsArr[i];
 				n = rod.from.id - 1;
 				k = rod.to.id - 1;
-
+				
 				rod.zg = new Array(6);
 				for (j = 0; j < 3; j++)
 				{
@@ -299,20 +272,20 @@ package ru.subdan.fem
 					// Заполнение X, Y, M в конце
 					rod.zg[j + 3] = Z[k * 3 + j];
 				}
-
+				
 				// 7. Вычисление вектора узловых перемещений стержня в местной СК
 				rod.calcLocalOffset();
-
+				
 				// Заполнение X, Y, M в начале
 				rod.from.offsetX = Number(FemMath.numberFormat(rod.zg[0], 4, true));
 				rod.from.offsetY = Number(FemMath.numberFormat(rod.zg[1], 4, true));
-				rod.from.offsetM = -Number(FemMath.numberFormat(rod.zg[2], 4, true));
-
+				rod.from.offsetM = Number(FemMath.numberFormat(rod.zg[2], 8, true));
+				
 				// Заполнение X, Y, M в конце
 				rod.to.offsetX = Number(FemMath.numberFormat(rod.zg[3], 4, true));
 				rod.to.offsetY = Number(FemMath.numberFormat(rod.zg[4], 4, true));
-				rod.to.offsetM = -Number(FemMath.numberFormat(rod.zg[5], 4, true));
-
+				rod.to.offsetM = Number(FemMath.numberFormat(rod.zg[5], 8, true));
+				
 				// 8. Вычисление вектора внутренних сил стержня в местной СК
 				rod.calcLocalForce();
 				rod.factorNFrom = Number(FemMath.numberFormat(rod.rl[0], 4, true));
@@ -322,26 +295,26 @@ package ru.subdan.fem
 				rod.factorMFrom = Number(FemMath.numberFormat(rod.rl[2], 4, true));
 				rod.factorMTo = Number(FemMath.numberFormat(rod.rl[5], 4, true));
 			}
-
+			
 			// Последний шаг – собрать разбитые стержни.
-
+			
 			// Для начала удалим все не нужные узлы
 			var nodesToDelete:Array = [];
 			for each (var node:FemNode in _nodesArr)
 				if (node.distributed)
 					nodesToDelete.push(node);
-
+			
 			while (nodesToDelete.length)
 			{
 				_nodesArr.splice(_nodesArr.indexOf(nodesToDelete[0]), 1);
 				_nodesNum--;
 				nodesToDelete.splice(0, 1);
 			}
-
+			
 			// Далее восстановим удаленные стержни
 			for (i = 0; i < _distrRods.length; i++)
 				addRod(_distrRods[i]);
-
+			
 			// Далее удалим распределенные кусочки стержней
 			var rodsToDelete:Array = [];
 			for (i = 0; i < _rodsArr.length; i++)
@@ -356,14 +329,14 @@ package ru.subdan.fem
 					frod.factorMFrom = frod.distributedRods[0].factorMFrom;
 					frod.factorQFrom = frod.distributedRods[0].factorQFrom;
 					frod.factorNFrom = frod.distributedRods[0].factorNFrom;
-
+					
 					for (j = 0; j < frod.distributedRods.length; j++)
 					{
 						frod.factorsM.push(frod.distributedRods[j].factorMFrom);
 						frod.factorsQ.push(frod.distributedRods[j].factorQFrom);
 						frod.factorsN.push(frod.distributedRods[j].factorNFrom);
 					}
-
+					
 					frod.factorMTo = frod.distributedRods[frod.distributedRods.length - 1].factorMTo;
 					frod.factorQTo = frod.distributedRods[frod.distributedRods.length - 1].factorQTo;
 					frod.factorNTo = frod.distributedRods[frod.distributedRods.length - 1].factorNTo;
@@ -375,27 +348,27 @@ package ru.subdan.fem
 				_rodsNum--;
 				rodsToDelete.splice(0, 1);
 			}
-
+			
 			return true;
 		}
-
+		
 		private function splitRod(rod:FemRod):void
 		{
 			var len:Number = FemMath.distance(rod.to.pos, rod.from.pos);
 			var partLen:Number = len / (DISTR_STEP + 1);
 			var ang:Number = Math.atan2(rod.to.pos.y - rod.from.pos.y, rod.to.pos.x - rod.from.pos.x)
-
+			
 			var prevX:Number = rod.from.pos.x;
 			var prevY:Number = rod.from.pos.y;
 			var nextX:Number;
 			var nextY:Number;
-
+			
 			var prevNode:FemNode;
 			var femRod:FemRod;
-
+			
 			var Q:Number = rod.distributedLoad * len;
 			var partQ:Number;
-
+			
 			partQ = Q / (DISTR_STEP + 1);
 			rod.from.loadX += -partQ / 2 * Math.sin(ang);
 			rod.from.loadY += partQ / 2 * Math.cos(ang);
@@ -404,7 +377,7 @@ package ru.subdan.fem
 			
 			//rod.from.loadM += Q * len * len / 12 / DISTR_STEP
 			//rod.to.loadM += Q * len * len / 12 / DISTR_STEP;
-
+			
 			// http://window.edu.ru/resource/481/74481/files/ulstu2011-36.pdf
 			var arr:Array = [];
 			for (var i:int = 0; i < DISTR_STEP; i++)
@@ -419,7 +392,7 @@ package ru.subdan.fem
 				femNode.loadX = -partQ * Math.sin(ang);
 				femNode.loadY = partQ * Math.cos(ang);
 				addNode(femNode);
-
+				
 				if (i == 0)
 				{
 					femRod = addRod(new FemRod(_rodsNum + 1, rod.material, rod.from, femNode));
@@ -432,22 +405,22 @@ package ru.subdan.fem
 					femRod.distributed = true;
 					femRod.distributedRod = rod;
 				}
-
+				
 				arr.push(femRod);
-
+				
 				prevNode = femNode;
 				prevX = femNode.pos.x;
 				prevY = femNode.pos.y;
 			}
-
+			
 			femRod = addRod(new FemRod(_rodsNum + 1, rod.material, prevNode, rod.to));
 			femRod.distributed = true;
 			femRod.distributedRod = rod;
 			arr.push(femRod);
-
+			
 			rod.distributedRods = arr;
 		}
-
+		
 		/**
 		 * Удаляет все стержни и узлы из конструкции.
 		 */
@@ -457,18 +430,18 @@ package ru.subdan.fem
 				_rodsArr[i].free();
 			init();
 		}
-
+		
 		//----------------------------------------------------------------------
 		//
 		//  GET/SET METHODS
 		//
 		//----------------------------------------------------------------------
-
+		
 		public function get rodsArr():Vector.<FemRod>
 		{
 			return _rodsArr;
 		}
-
+		
 		public function get nodesArr():Vector.<FemNode>
 		{
 			return _nodesArr;
